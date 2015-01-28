@@ -1,0 +1,180 @@
+#!/usr/bin/env python
+
+import math
+import numpy
+import random
+#import matplotlib.pyplot as plt
+#1. Write a script that assigns allele frequencies to two loci in two separate populations. Write the script so that the user can enter the allele frequencies.
+
+def hapsample(p1,q1):
+	p2=1-p1
+	q2=1-q1
+	#print p2
+	#print q2
+	#calculate haplotype frequencies, want to redo by sampling from allele freqs, creating hap freq and then count from there. 
+	x11=p1*q1
+	x12=p1*q2
+	x21=p2*q1
+	x22=p2*q2
+	#print "haplotype x11="+str(x11)
+	#print "haplotype x12="+str(x12)
+	#print "haplotype x21="+str(x21)
+	#print "haplotype x22="+str(x22)
+	#create allele frequency brackets for random generation of haplotypes
+	a=x11
+	b=x11+x12
+	c=b+x21
+	d=c+x22
+	#print a
+	#print b
+	#print c
+	#print d
+	#make lists to put hap freqs into. I could do this cleaner but will fix later
+	Lx11=[]
+	Lx12=[]
+	Lx21=[]
+	Lx22=[]
+	ALL=[]
+	#generating list of random numbers between 0-1
+	for x in range (40):
+			y=random.random()
+			ALL.append(y)
+	#assign random numbers to haplotype groups
+	for y in ALL:
+			if y <= a:
+				Lx11.append(y)
+			elif a < y <= b:
+				Lx12.append(y)
+			elif b < y <= c:
+				Lx21.append(y)
+			else:
+				Lx22.append(y)
+	#add up the number of individuals in each catagory
+	Lx11=len(Lx11)
+	Lx12=len(Lx12)
+	Lx21=len(Lx21)
+	Lx22=len(Lx22)
+	samples=[Lx11,Lx12,Lx21,Lx22]
+	print "SAMPLES"
+	print samples
+	#recalculate haplotype frequences from samples
+	fx11=float(Lx11)/40
+	fx12=float(Lx12)/40
+	fx21=float(Lx21)/40
+	fx22=float(Lx22)/40
+	#put frequencies in a list
+	hapfreq=[fx11,fx12,fx21,fx22]
+	print "HAPFREQ"
+	print hapfreq
+
+	print "Haplotype frequencies from sampled population, in the order x11,x12,x21,x22: "+str(hapfreq)
+	#calculate allele freq from samples
+	a1=fx11+fx12
+	a2=fx21+fx22
+	b1=fx11+fx21
+	b2=fx12+fx22
+	#put allele freqs in a list
+	allelefreq=[a1,a2,b1,b2]
+	print "Allele frequencies from sampled population, in the order p1, p2, q1, q2: "+str(allelefreq)
+	print "This script returns hapfreq, allelefreq, and straight sample number lists, in that order"
+	return hapfreq, allelefreq, samples
+
+def Dprime(hapfreq):
+	#assign each item in list to a variable
+	x11=hapfreq[0]
+	x12=hapfreq[1]
+	x21=hapfreq[2]
+	x22=hapfreq[3]
+	print x11
+	print x12
+	print x21
+	print x22
+	#calculate D value
+	D=x11*x22-x12*x22
+	print "Your D value is: "+str(D)
+	#calculate Dmax
+	for x in hapfreq:
+		if x==0:
+			Dmax=1
+		elif D > 0:
+			Dmax=min(x12,x21)
+		elif D < 0:
+			Dmax=min(x11,x22)
+		else:
+			print "you fucked something up if you are getting this message"
+
+	print "Your Dmax value is: "+str(Dmax)
+	#calculate Dprime
+	Dprime=D/Dmax	
+	#print "Your D' value for species A is: "+str(Dprime)	
+
+	return Dprime,D
+
+def rsqrd(allelefreq,D):
+	#assign each item in list to a variable
+	p1=allelefreq[0]
+	p2=allelefreq[1]
+	q1=allelefreq[2]
+	q2=allelefreq[3]
+	#calculate Pearson coefficient of correlation, aka r
+	r=D/math.sqrt(p1*p2*q1*q2)
+	rsqrd=r**2
+	#print "Your r-squared value for species A is: "+str(rsqrd)
+	return rsqrd
+
+
+#simulate for species A
+print "Please enter the following information for species A"
+p1A=(input('What is the frequency of one allele loci 1, species A?'))
+print "you entered "+str(p1A)+" for loci 1 species A. Idiot check! Is this a decimal?"
+q1A=(input('What is the frequency of one allele loci 2, species A?'))
+print "you entered "+str(q1A)+" for loci 2 species A. Idiot check! Is this a decimal?"
+
+#run function to pull 40 individuals for given species and calculate hap, allel freq and return sample numbers that created those freqs
+speciesA=hapsample(p1A,q1A)
+
+hapfreqA=speciesA[0]
+allelefreqA=speciesA[1]
+samplesA=speciesA[2]
+
+DpA=Dprime(hapfreqA)
+D=DpA[1]
+
+print "The D prime value for species A is: "+str(DpA[0])
+
+r2A=rsqrd(allelefreqA,D)
+
+print "The r-squared value for species A is: "+str(r2A)
+
+#simulate for species B
+print "Please enter the following information for species B"
+p1B=(input('What is the frequency of loci 1, species B?'))
+print "you entered "+str(p1B)+" for loci 1 species B. Idiot check! Is this a decimal? If not, quit and try again. Later I'll make the script do this for you. For now, do it yourself."
+q1B=(input('What is the frequency of loci 2, species B?'))
+print "you entered "+str(p1B)+" for loci 2 species B. Idiot check! Is this a decimal?"
+
+
+#run function to pull 40 individuals for given species and calculate hap, allel freq and return sample numbers that created those freqs
+speciesB=hapsample(p1B,q1B)
+#should be able to also do this. hapfreqB, allelefreqB, samplesB=hapsample(p1B,q1B)
+
+hapfreqB=speciesB[0]
+allelefreqB=speciesB[1]
+samplesB=speciesB[2]
+
+DpB=Dprime(hapfreqB)
+
+print "The D prime value for species B is: "+str(DpB[0])
+D=DpB[1]
+r2B=rsqrd(allelefreqB,D)
+
+print "The r-squared value for species B is: "+str(r2B)
+
+#to observe wahlund effect
+print "What if we combine the samples from both populations?"
+print "samplesA is:"+str(samplesA)
+print "samplesB is:"+str(samplesB)
+samplesmix=[samplesAi+samplesBi for samplesAi,samplesBi in zip(samplesA,samplesB)]
+print "samples mixed is:"+str(samplesmix)
+
+#plt.subplot(###) rows, columns, something else
